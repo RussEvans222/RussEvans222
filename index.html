@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joke Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 6vw, 2.4rem);
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-align: center;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: #a0aec0;
+      margin-bottom: 36px;
+      text-align: center;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 32px 28px;
+      width: 100%;
+      max-width: 440px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      backdrop-filter: blur(12px);
+      transition: transform 0.15s ease;
+    }
+
+    .setup {
+      font-size: clamp(1rem, 4vw, 1.15rem);
+      font-weight: 600;
+      line-height: 1.5;
+      color: #e2e8f0;
+      margin-bottom: 0;
+    }
+
+    .punchline {
+      font-size: clamp(1rem, 4vw, 1.15rem);
+      font-weight: 500;
+      line-height: 1.5;
+      color: #63b3ed;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: none;
+    }
+
+    .punchline.visible { display: block; }
+
+    .emoji {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+      display: block;
+      text-align: center;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 28px;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 16px 24px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s ease, opacity 0.1s ease;
+      -webkit-tap-highlight-color: transparent;
+      letter-spacing: 0.3px;
+    }
+
+    button:active { transform: scale(0.96); opacity: 0.85; }
+
+    #btn-reveal {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+    }
+
+    #btn-next {
+      background: linear-gradient(135deg, #f6d365, #fda085);
+      color: #1a1a2e;
+    }
+
+    #btn-reveal:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .counter {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #718096;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in { animation: fadeIn 0.35s ease forwards; }
+  </style>
+</head>
+<body>
+
+  <h1>😂 Joke Generator</h1>
+  <p class="subtitle">Tap to reveal the punchline</p>
+
+  <div class="card" id="card">
+    <span class="emoji" id="emoji"></span>
+    <p class="setup" id="setup"></p>
+    <p class="punchline" id="punchline"></p>
+  </div>
+
+  <div class="actions">
+    <button id="btn-reveal">Reveal punchline 👀</button>
+    <button id="btn-next">Next joke ➡️</button>
+  </div>
+
+  <p class="counter" id="counter"></p>
+
+  <script>
+    const jokes = [
+      { emoji: "🤔", setup: "Why don't scientists trust atoms?", punchline: "Because they make up everything!" },
+      { emoji: "🧀", setup: "What do you call cheese that isn't yours?", punchline: "Nacho cheese!" },
+      { emoji: "🐶", setup: "What do you call a sleeping dinosaur?", punchline: "A dino-snore!" },
+      { emoji: "📚", setup: "Why did the scarecrow win an award?", punchline: "Because he was outstanding in his field!" },
+      { emoji: "🌊", setup: "What do you call a fish without eyes?", punchline: "A fsh!" },
+      { emoji: "🎸", setup: "Why can't a bicycle stand on its own?", punchline: "Because it's two-tired!" },
+      { emoji: "🦷", setup: "What do you call a bear with no teeth?", punchline: "A gummy bear!" },
+      { emoji: "🌮", setup: "Why did the math book look so sad?", punchline: "Because it had too many problems!" },
+      { emoji: "🔦", setup: "What do you call a factory that makes okay products?", punchline: "A satisfactory!" },
+      { emoji: "🦆", setup: "Why did the duck get arrested?", punchline: "He was selling quack!" },
+      { emoji: "🍕", setup: "Why did the pizza maker go to therapy?", punchline: "He had too much on his plate!" },
+      { emoji: "🐸", setup: "What do frogs do with paper?", punchline: "Rip-it!" },
+      { emoji: "🌙", setup: "I told my wife she was drawing her eyebrows too high.", punchline: "She looked surprised." },
+      { emoji: "🦉", setup: "What do you call an owl that does magic tricks?", punchline: "Hoo-dini!" },
+      { emoji: "🎩", setup: "Why don't eggs tell jokes?", punchline: "They'd crack each other up!" },
+      { emoji: "🚀", setup: "How do you organize a space party?", punchline: "You planet!" },
+      { emoji: "🦩", setup: "Why did the flamingo lift one leg?", punchline: "Because if it lifted both, it would fall!" },
+      { emoji: "🔋", setup: "What did the ocean say to the beach?", punchline: "Nothing, it just waved." },
+      { emoji: "🧲", setup: "I used to hate facial hair...", punchline: "But then it grew on me." },
+      { emoji: "🐢", setup: "Why are turtles such good employees?", punchline: "They never shell out on deadlines!" },
+    ];
+
+    let order = [];
+    let index = 0;
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function loadJoke() {
+      if (index >= order.length) {
+        order = shuffle(jokes.map((_, i) => i));
+        index = 0;
+      }
+      const joke = jokes[order[index]];
+
+      const card = document.getElementById("card");
+      card.classList.remove("fade-in");
+      void card.offsetWidth; // reflow to restart animation
+      card.classList.add("fade-in");
+
+      document.getElementById("emoji").textContent = joke.emoji;
+      document.getElementById("setup").textContent = joke.setup;
+      document.getElementById("punchline").textContent = joke.punchline;
+      document.getElementById("punchline").classList.remove("visible");
+      document.getElementById("btn-reveal").disabled = false;
+      document.getElementById("counter").textContent =
+        `Joke ${index + 1} of ${jokes.length}`;
+    }
+
+    document.getElementById("btn-reveal").addEventListener("click", () => {
+      document.getElementById("punchline").classList.add("visible");
+      document.getElementById("btn-reveal").disabled = true;
+    });
+
+    document.getElementById("btn-next").addEventListener("click", () => {
+      index++;
+      loadJoke();
+    });
+
+    // also tap the card to reveal
+    document.getElementById("card").addEventListener("click", () => {
+      const btn = document.getElementById("btn-reveal");
+      if (!btn.disabled) btn.click();
+    });
+
+    order = shuffle(jokes.map((_, i) => i));
+    loadJoke();
+  </script>
+</body>
+</html>
