@@ -1,0 +1,550 @@
+/* ─── Reset ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:        #007AFF;
+  --gray:        #8E8E93;
+  --bubble-sent: #007AFF;
+  --bubble-recv: #E9E9EB;
+  --bg:          #ffffff;
+  --nav-bg:      rgba(249, 249, 249, 0.94);
+  --divider:     rgba(60, 60, 67, 0.29);
+  --font:        -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  background: #1c1c1e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── App shell ─────────────────────────────────────────── */
+.app-shell {
+  width: 100%;
+  height: 100dvh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+@media (min-width: 600px) {
+  .app-shell {
+    width: 390px;
+    height: min(844px, 95dvh);
+    border-radius: 52px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.08),
+      0 40px 80px rgba(0,0,0,0.6),
+      0 20px 40px rgba(0,0,0,0.4);
+  }
+}
+
+/* ─── Header ────────────────────────────────────────────── */
+.chat-header {
+  flex-shrink: 0;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid var(--divider);
+  position: relative; /* for dropdown */
+  z-index: 20;
+}
+
+/* Status bar */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px 0;
+}
+
+.status-time {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #000;
+}
+
+/* Nav bar */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px 12px;
+  gap: 4px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-family: var(--font);
+  font-size: 17px;
+  cursor: pointer;
+  padding: 6px 10px 6px 4px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.back-btn:active { background: rgba(0,122,255,0.1); }
+
+.contact-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.contact-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(150deg, #5ac8fa 0%, #007aff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.contact-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #000;
+  letter-spacing: -0.2px;
+}
+
+.contact-label {
+  font-size: 11px;
+  color: var(--gray);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #E5E5EA;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--blue);
+}
+.icon-btn:active { background: #D1D1D6; }
+
+/* Dropdown menu */
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: rgba(255,255,255,0.98);
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18), 0 1px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+  min-width: 176px;
+  z-index: 100;
+  border: 0.5px solid rgba(0,0,0,0.08);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  border-bottom: 0.5px solid var(--divider);
+  font-family: var(--font);
+  font-size: 17px;
+  text-align: left;
+  cursor: pointer;
+  color: #000;
+}
+.dropdown-item:last-child { border-bottom: none; }
+.dropdown-item:active { background: rgba(0,0,0,0.05); }
+
+.dropdown-item-danger { color: #FF3B30; }
+
+/* ─── Messages area ─────────────────────────────────────── */
+.messages-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 8px 4px;
+  display: flex;
+  flex-direction: column;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.messages-area::-webkit-scrollbar { display: none; }
+
+/* Time label */
+.time-label {
+  text-align: center;
+  font-size: 12px;
+  color: var(--gray);
+  font-weight: 500;
+  letter-spacing: 0.05px;
+  padding: 12px 0 6px;
+}
+
+/* ─── Message rows ──────────────────────────────────────── */
+.msg-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 1px 4px;
+}
+
+.msg-row--sent  { flex-direction: row-reverse; }
+.msg-row--received { flex-direction: row; }
+
+/* Extra spacing above a new sender group */
+.msg-row--only,
+.msg-row--first { margin-top: 8px; }
+
+/* ─── Contact avatar ───────────────────────────────────── */
+.msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(150deg, #5ac8fa 0%, #007aff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+.msg-avatar--hidden { visibility: hidden; }
+
+/* ─── Bubbles ───────────────────────────────────────────── */
+.msg-bubble {
+  max-width: min(270px, 72vw);
+  padding: 9px 14px;
+  font-size: 17px;
+  line-height: 1.35;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* Sent bubble colours */
+.msg-row--sent .msg-bubble {
+  background: var(--bubble-sent);
+  color: #fff;
+}
+
+/* Received bubble colours */
+.msg-row--received .msg-bubble {
+  background: var(--bubble-recv);
+  color: #000;
+}
+
+/* ── Bubble corner shapes ──
+   iOS convention: the "tail" is on the BOTTOM corner closest to the speaker.
+   Sent  → bottom-right tail
+   Recv  → bottom-left  tail
+   Only/Last in group get the tail; First/Mid are more rounded.
+*/
+
+/* Sent – only or last in group → bottom-right tail */
+.msg-row--sent.msg-row--only  .msg-bubble,
+.msg-row--sent.msg-row--last  .msg-bubble {
+  border-radius: 18px 18px 5px 18px;
+}
+/* Sent – first in group */
+.msg-row--sent.msg-row--first .msg-bubble {
+  border-radius: 18px 5px 18px 18px;
+}
+/* Sent – mid in group */
+.msg-row--sent.msg-row--mid   .msg-bubble {
+  border-radius: 18px 5px 5px 18px;
+}
+
+/* Received – only or last in group → bottom-left tail */
+.msg-row--received.msg-row--only  .msg-bubble,
+.msg-row--received.msg-row--last  .msg-bubble {
+  border-radius: 18px 18px 18px 5px;
+}
+/* Received – first in group */
+.msg-row--received.msg-row--first .msg-bubble {
+  border-radius: 5px 18px 18px 18px;
+}
+/* Received – mid in group */
+.msg-row--received.msg-row--mid   .msg-bubble {
+  border-radius: 5px 18px 18px 5px;
+}
+
+/* ─── Delivery status ───────────────────────────────────── */
+.msg-status {
+  align-self: flex-end;
+  font-size: 11px;
+  color: var(--gray);
+  padding: 0 6px 2px;
+  white-space: nowrap;
+}
+
+/* ─── Typing indicator ──────────────────────────────────── */
+.typing-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 4px 4px;
+  margin-top: 8px;
+}
+
+.typing-bubble {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bubble-recv);
+  border-radius: 18px 18px 18px 5px;
+  padding: 11px 16px;
+}
+
+.typing-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #8e8e93;
+  animation: typing-pulse 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-pulse {
+  0%, 60%, 100% { transform: translateY(0);   opacity: 0.4; }
+  30%            { transform: translateY(-7px); opacity: 1;   }
+}
+
+/* ─── Input bar ─────────────────────────────────────────── */
+.input-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px 10px;
+  padding-bottom: max(14px, env(safe-area-inset-bottom, 14px));
+  background: var(--bg);
+  border-top: 0.5px solid var(--divider);
+}
+
+.input-icon-btn {
+  width: 34px;
+  height: 34px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 1px;
+}
+
+.input-field-wrap {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  border: 1.5px solid #C7C7CC;
+  border-radius: 22px;
+  padding: 6px 10px 6px 14px;
+  gap: 6px;
+  background: #fff;
+  min-height: 36px;
+  transition: border-color 0.15s;
+}
+.input-field-wrap:focus-within { border-color: #adadb3; }
+
+.input-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.35;
+  max-height: 108px;
+  padding: 0;
+  color: #000;
+}
+.input-textarea::placeholder { color: #C7C7CC; }
+
+.send-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--blue);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  align-self: flex-end;
+  transition: background 0.12s, transform 0.1s;
+}
+.send-btn:disabled { background: #aeaeb2; }
+.send-btn:not(:disabled):active { transform: scale(0.9); }
+
+/* ─── Setup screen ──────────────────────────────────────── */
+.setup-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #f2f2f7;
+  overflow: hidden;
+}
+
+.setup-header {
+  flex-shrink: 0;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid var(--divider);
+  padding: 52px 20px 14px;
+  text-align: center;
+}
+
+.setup-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+
+.setup-subtitle {
+  font-size: 13px;
+  color: var(--gray);
+  margin-top: 3px;
+}
+
+.setup-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 32px;
+}
+
+.setup-section {
+  margin: 24px 16px 0;
+}
+
+.setup-section-title {
+  font-size: 13px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 400;
+  padding: 0 4px 8px;
+}
+
+.setup-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.setup-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--divider);
+}
+.setup-row:last-child { border-bottom: none; }
+
+.setup-row-col {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.setup-label {
+  font-size: 17px;
+  color: #000;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.setup-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: var(--font);
+  font-size: 17px;
+  text-align: right;
+  color: var(--gray);
+  background: transparent;
+  min-width: 0;
+}
+
+.setup-textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font);
+  font-size: 16px;
+  color: var(--gray);
+  background: transparent;
+  line-height: 1.4;
+}
+
+.setup-save-btn {
+  display: block;
+  margin: 24px 16px 0;
+  width: calc(100% - 32px);
+  padding: 16px;
+  background: var(--blue);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.setup-save-btn:active { background: #006adb; }
+.setup-save-btn:disabled { background: #aeaeb2; cursor: not-allowed; }
