@@ -23,6 +23,8 @@ export default function ChatView({ persona, onOpenSettings }) {
     ]
   })
   const [isTyping, setIsTyping] = useState(false)
+  // isBusy covers both the silent reading phase AND the typing-dots phase
+  const [isBusy, setIsBusy] = useState(false)
 
   useEffect(() => {
     localStorage.setItem('imsg-messages', JSON.stringify(messages))
@@ -48,54 +50,49 @@ export default function ChatView({ persona, onOpenSettings }) {
     }
     const updated = [...messages, myMsg]
     setMessages(updated)
+    setIsBusy(true)
 
-    // Realistic typing delay: 1–4 seconds, weighted by message length
-    const delay = 1200 + Math.random() * 2800
+    // Fire the API call immediately so it runs in the background
+    const responsePromise = fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history: updated, persona })
+    }).then(r => r.json()).catch(() => ({ reply: null }))
+
+    // Phase 1 — silent reading delay (2–20 s): they received the message, reading it
+    const readDelay = 2000 + Math.random() * 18000
+    await new Promise(r => setTimeout(r, readDelay))
+
+    // Phase 2 — typing dots visible (3–10 s): show dots, wait for min type time + API
     setIsTyping(true)
+    const typeDelay = 3000 + Math.random() * 7000
 
-    await new Promise(r => setTimeout(r, delay))
-
+    let data
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: updated, persona })
-      })
-      const data = await res.json()
-      const reply = data.reply || 'lol sorry one sec'
-
-      setMessages(prev =>
-        prev
-          .map(m => m.id === myMsg.id ? { ...m, status: 'read' } : m)
-          .concat({
-            id: makeId(),
-            text: reply,
-            sender: 'them',
-            time: new Date().toISOString()
-          })
-      )
+      // Wait for BOTH the minimum typing duration AND the actual API response
+      ;[data] = await Promise.all([
+        responsePromise,
+        new Promise(r => setTimeout(r, typeDelay))
+      ])
     } catch {
-      // Fallback feels natural if API is down
-      setMessages(prev =>
-        prev
-          .map(m => m.id === myMsg.id ? { ...m, status: 'read' } : m)
-          .concat({
-            id: makeId(),
-            text: 'lol hold on my phone is being weird',
-            sender: 'them',
-            time: new Date().toISOString()
-          })
-      )
-    } finally {
-      setIsTyping(false)
+      data = { reply: null }
     }
+
+    setIsTyping(false)
+    setIsBusy(false)
+
+    const reply = data?.reply || 'lol sorry one sec'
+    setMessages(prev => [
+      ...prev.map(m => m.id === myMsg.id ? { ...m, status: 'read' } : m),
+      { id: makeId(), text: reply, sender: 'them', time: new Date().toISOString() }
+    ])
   }
 
   return (
     <>
       <ChatHeader persona={persona} onSettings={onOpenSettings} onClearChat={clearChat} />
       <MessageList messages={messages} isTyping={isTyping} persona={persona} />
-      <MessageInput onSend={sendMessage} disabled={isTyping} />
+      <MessageInput onSend={sendMessage} disabled={isBusy} />
     </>
   )
 }

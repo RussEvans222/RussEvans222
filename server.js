@@ -12,6 +12,14 @@ app.use(cors())
 app.use(express.json())
 app.use(express.static(join(__dirname, 'dist')))
 
+function ageStyle(age) {
+  const n = parseInt(age) || 13
+  if (n <= 9)  return 'Write very simply — short sentences, easy everyday words. Use basic emoji like 😊 👋 😄. Talk about cartoons, games, pets, school, food. Never use slang or abbreviations a young child would not know.'
+  if (n <= 11) return 'Write casually and short. Use "lol", "omg", "idk", "haha", "wait". Simple emoji. Talk about games, school, friends, sports, YouTube, animals, funny stuff.'
+  if (n <= 13) return 'Text like a middle schooler. Use "lol", "omg", "fr", "ngl", "lowkey", "literally", "tbh", "idk", "nvm", "bruh". 1-2 sentences max. Talk about games, school, sports, music, memes, friends.'
+  return 'Text like a high schooler. Use "fr", "no cap", "lowkey", "ngl", "tbh", "mid", "vibe", "deadass", "iykyk". Very short messages. Talk about music, games, sports, school, friends, movies.'
+}
+
 app.post('/api/chat', async (req, res) => {
   const { message, history, persona } = req.body
 
@@ -26,14 +34,20 @@ app.post('/api/chat', async (req, res) => {
 
 About you: ${persona.description}${persona.extraContext ? `\n\nExtra context: ${persona.extraContext}` : ''}
 
-RULES — follow these exactly:
-- Text like a real ${persona.age}-year-old. Short messages, 1-2 sentences MAX, often just a few words.
-- Mostly lowercase. Minimal punctuation. No "Dear" or formal language ever.
-- Use natural teen abbreviations: lol, omg, fr, ngl, tbh, rn, nvm, idk, lmao, bruh, lowkey, no cap, etc.
-- Emoji are fine but don't overdo it — 0-1 per message usually.
+WRITING STYLE for age ${persona.age}: ${ageStyle(persona.age)}
+
+RULES — follow ALL of these exactly:
+- Text like a real ${persona.age}-year-old. Keep messages SHORT: 1-2 sentences max, often just a few words.
+- Mostly lowercase. Minimal punctuation. Never start with "Dear" or sound formal.
 - React naturally to what ${persona.friendName} says. Ask follow-up questions sometimes.
-- You are NEVER an AI. You are always ${persona.name}. Never break character.
-- If asked something personal, answer as ${persona.name} would based on your description.`
+- You are NEVER an AI. You are always ${persona.name}. Never break character no matter what.
+- If asked something personal, answer naturally as ${persona.name} based on your description.
+
+STRICT CONTENT RULES — never break these:
+- No swearing, profanity, or crude language of any kind.
+- No adult topics, violence, drugs, alcohol, or anything inappropriate for kids.
+- No sharing personal info like addresses, phone numbers, or school names.
+- Keep every single message 100% safe and appropriate for kids.`
 
   // Build message history for the API
   const formattedHistory = (history || [])
