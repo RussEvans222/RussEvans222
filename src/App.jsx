@@ -11,6 +11,19 @@ const DEFAULT_PERSONA = {
   extraContext: ''
 }
 
+function Shell({ children }) {
+  return (
+    <div className="page-bg">
+      <div className="phone-outer">
+        <span className="dynamic-island" aria-hidden="true" />
+        <div className="app-shell">
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function App() {
   const [persona, setPersona] = useState(null)
   const [showSetup, setShowSetup] = useState(false)
@@ -28,7 +41,6 @@ export default function App() {
 
   const handleSave = (data) => {
     localStorage.setItem('imsg-persona', JSON.stringify(data))
-    // Clear old chat when persona changes
     if (!persona || persona.name !== data.name) {
       localStorage.removeItem('imsg-messages')
     }
@@ -40,19 +52,19 @@ export default function App() {
 
   if (showSetup || !persona) {
     return (
-      <div className="app-shell">
+      <Shell>
         <SetupScreen
           initial={persona || DEFAULT_PERSONA}
           onSave={handleSave}
           isFirstTime={!persona}
         />
-      </div>
+      </Shell>
     )
   }
 
   return (
-    <div className="app-shell">
+    <Shell>
       <ChatView persona={persona} onOpenSettings={() => setShowSetup(true)} />
-    </div>
+    </Shell>
   )
 }
