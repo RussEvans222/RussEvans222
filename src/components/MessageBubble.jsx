@@ -1,9 +1,8 @@
 // position values: 'only' | 'first' | 'mid' | 'last'
 export default function MessageBubble({ msg, contactInitials }) {
-  const { sender, text, position, status } = msg
+  const { sender, text, imageUrl, position, status } = msg
   const isSent = sender === 'me'
 
-  // Show avatar only for the last (or only) received bubble in a group
   const showAvatar = !isSent && (position === 'only' || position === 'last')
 
   return (
@@ -14,7 +13,17 @@ export default function MessageBubble({ msg, contactInitials }) {
         </div>
       )}
 
-      <div className="msg-bubble">{text}</div>
+      <div className="msg-content">
+        {text ? <div className="msg-bubble">{text}</div> : null}
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt="Shared photo"
+            className={`msg-image msg-image--${isSent ? 'sent' : 'received'}`}
+            loading="lazy"
+          />
+        ) : null}
+      </div>
 
       {isSent && (position === 'only' || position === 'last') && status && (
         <div className="msg-status">{status === 'read' ? 'Read' : 'Delivered'}</div>

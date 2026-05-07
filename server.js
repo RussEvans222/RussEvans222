@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
@@ -47,7 +48,11 @@ STRICT CONTENT RULES — never break these:
 - No swearing, profanity, or crude language of any kind.
 - No adult topics, violence, drugs, alcohol, or anything inappropriate for kids.
 - No sharing personal info like addresses, phone numbers, or school names.
-- Keep every single message 100% safe and appropriate for kids.`
+- Keep every single message 100% safe and appropriate for kids.
+
+SENDING IMAGES: If ${persona.friendName} asks you to send a picture, photo, meme, or selfie, write your normal reply AND add one image tag at the very end describing what to generate:
+<image>a golden retriever puppy tripping over its own ears</image>
+The description inside the tag must be vivid, funny if appropriate, and 100% kid-friendly. Only include an <image> tag when a picture was asked for or clearly fits — not in regular conversation.`
 
   // Build message history for the API
   const formattedHistory = (history || [])
@@ -77,7 +82,7 @@ STRICT CONTENT RULES — never break these:
   try {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 120,
+      max_tokens: 200,
       system: systemPrompt,
       messages: [
         ...cleanHistory,
@@ -85,8 +90,32 @@ STRICT CONTENT RULES — never break these:
       ]
     })
 
-    const reply = response.content[0].text.trim()
-    res.json({ reply })
+    const raw = response.content[0].text.trim()
+
+    // Extract optional <image> tag
+    const imageTagMatch = raw.match(/<image>([\s\S]*?)<\/image>/)
+    const reply = raw.replace(/<image>[\s\S]*?<\/image>/, '').trim()
+    const imagePrompt = imageTagMatch ? imageTagMatch[1].trim() : null
+
+    // Generate image with DALL-E 3 if Claude requested one
+    let imageUrl = null
+    if (imagePrompt && process.env.OPENAI_API_KEY) {
+      try {
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+        const imgRes = await openai.images.generate({
+          model: 'dall-e-3',
+          prompt: `Cartoon illustration style, safe for children, fun and wholesome: ${imagePrompt}`,
+          n: 1,
+          size: '1024x1024',
+          quality: 'standard'
+        })
+        imageUrl = imgRes.data[0].url
+      } catch (imgErr) {
+        console.error('Image generation failed:', imgErr.message)
+      }
+    }
+
+    res.json({ reply, imageUrl })
   } catch (err) {
     console.error('Anthropic API error:', err.message)
     res.status(500).json({ error: err.message })

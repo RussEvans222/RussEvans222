@@ -81,10 +81,13 @@ export default function ChatView({ persona, onOpenSettings }) {
     setIsTyping(false)
     setIsBusy(false)
 
-    const reply = data?.reply || 'lol sorry one sec'
+    const reply = data?.reply || ''
+    const imageUrl = data?.imageUrl || null
+    const text = reply || (!imageUrl ? 'lol sorry one sec' : '')
+
     setMessages(prev => [
       ...prev.map(m => m.id === myMsg.id ? { ...m, status: 'read' } : m),
-      { id: makeId(), text: reply, sender: 'them', time: new Date().toISOString() }
+      { id: makeId(), text, imageUrl, sender: 'them', time: new Date().toISOString() }
     ])
   }
 
